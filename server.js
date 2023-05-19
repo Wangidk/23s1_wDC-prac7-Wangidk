@@ -1,36 +1,54 @@
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
-// 将public文件夹作为静态文件目录
-app.use(express.static('public'));
-// 设置 body-parser 中间件来解析请求体
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+
+var app = express();
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
+
 app.get('/brew', (req, res) => {
   const drink = req.query.drink;
 
   if (drink === 'tea') {
     res.send('A delicious cup of tea!');
   } else if (drink === 'coffee') {
-    res.status(418).send();
+    res.sendStatus(418);
   } else {
-    res.status(400).send();
+    res.sendStatus(400);
   }
 });
-// 添加这段代码作为路由处理函数
+
+var previousMessage = null;
+
 app.post('/pass-it-on', (req, res) => {
   const message = req.body.message;
 
-  // 处理消息，将后缀添加到每一行后面
-  const lines = message.split('\n');
-  const modifiedLines = lines.map(line => line + req.body.suffix);
-  const responseText = modifiedLines.join('\n');
+  if (!message || message.trim() === '') {
+    res.sendStatus(400);
+  } else {
+    if (previousMessage === '') {
+      previousMessage = message;
+    }
 
-  res.send(responseText);
+    const responseMessage = previousMessage || 'first';
+
+    previousMessage = message;
+
+    res.send(responseMessage);
+  }
 });
 
-// 启动服务器监听在指定的端口上
-const port = 3000;
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
-});
+
+module.exports = app;
