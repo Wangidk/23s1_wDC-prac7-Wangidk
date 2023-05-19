@@ -1,54 +1,24 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const app = express();
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+let requestCount = 0;
 
-var app = express();
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-
-app.get('/brew', (req, res) => {
-  const drink = req.query.drink;
-
-  if (drink === 'tea') {
-    res.send('A delicious cup of tea!');
-  } else if (drink === 'coffee') {
-    res.sendStatus(418);
-  } else {
-    res.sendStatus(400);
-  }
+// Custom middleware to count requests
+app.use((req, res, next) => {
+  requestCount++;
+  console.log(`Received ${requestCount} requests`);
+  next();
 });
 
-var previousMessage = null;
+// Define your routes and other middleware here
 
-app.post('/pass-it-on', (req, res) => {
-  const message = req.body.message;
-
-  if (!message || message.trim() === '') {
-    res.sendStatus(400);
-  } else {
-    if (previousMessage === '') {
-      previousMessage = message;
-    }
-
-    const responseMessage = previousMessage || 'first';
-
-    previousMessage = message;
-
-    res.send(responseMessage);
-  }
+// Example GET route
+app.get('/', (req, res) => {
+  res.send('Hello, world!');
 });
 
-
-module.exports = app;
+// Start the server
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
+});
