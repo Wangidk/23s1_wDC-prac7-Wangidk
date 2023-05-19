@@ -1,38 +1,32 @@
 const express = require('express');
+const session = require('express-session');
+
 const app = express();
-const path = require('path');
-const bodyParser = require('body-parser');
+const port = 3000;
 
-app.use(bodyParser.urlencoded({ extended: false }));
-let previousMessage = '';
+// Configure session middleware
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
 
-// 设置静态文件目录
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('/brew', (req, res) => {
-    const drink = req.query.drink;
-  
-    if (drink === 'tea') {
-      res.send('A delicious cup of tea!');
-    } else if (drink === 'coffee') {
-      res.status(418).send();
-    } else {
-      res.status(400).send();
-    }
-  });
+// POST route for /tcaccept
+app.post('/tcaccept', (req, res) => {
+  req.session.accepted = true; // Set session flag to true
+  res.send('It works');
+});
 
-app.post('/pass-it-on', (req, res) => {
-  const message = req.body.message;
-
-  if (!message || message.trim() === '') {
-    res.status(400).send();
+// GET route for /users/accepted
+app.get('/users/accepted', (req, res) => {
+  if (req.session.accepted) {
+    res.send('It works');
   } else {
-    const responseMessage = previousMessage === '' ? message : previousMessage;
-    previousMessage = message;
-    res.send(responseMessage);
+    res.sendStatus(403);
   }
 });
-// 启动服务器
-const port = 3000;
+
+// Start the server
 app.listen(port, () => {
-  console.log(`服务器正在监听端口 ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
