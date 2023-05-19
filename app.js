@@ -1,21 +1,18 @@
 const express = require('express');
 const app = express();
 
-let requestCount = 0;
+app.get('/brew', (req, res) => {
+  const drink = req.query.drink;
 
-// Custom middleware to count requests
-app.use((req, res, next) => {
-  requestCount++;
-  console.log(`Received ${requestCount} requests`);
-  next();
+  if (drink === 'tea') {
+    res.send('A delicious cup of tea!');
+  } else if (drink === 'coffee') {
+    res.sendStatus(418);
+  } else {
+    res.sendStatus(400);
+  }
 });
 
-// Define your routes and other middleware here
-
-// Example GET route
-app.get('/', (req, res) => {
-  res.send('Hello, world!');
-});
 
 // Start the server
 const port = 3000;
